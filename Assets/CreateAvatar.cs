@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class CreateAvatar : MonoBehaviour
 {
@@ -26,8 +27,32 @@ public class CreateAvatar : MonoBehaviour
         float experience = experienceSlider.value;
         string item = itemDropdown.options[itemDropdown.value].text;
 
-        Debug.Log(name + " " + avatarClass + " " + experience + "  " + item);
+        Debug.Log(name + " " + avatarClass + " " + experience + " " + item);
 
         //connect to server and send data over
+
+        StartCoroutine(Upload(name, avatarClass, (int)experience, item));
+    }
+
+    IEnumerator Upload(string name, string avatarClass, int experience, string item)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("name", name);
+        form.AddField("experience", experience);
+        form.AddField("avatarClass", avatarClass);
+        form.AddField("item", item);
+
+        using UnityWebRequest www = UnityWebRequest.Post("http://192.168.56.101/insert.php", form);
+        yield return www.SendWebRequest();
+
+        if(www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError(www.error);
+        }
+        else
+        {
+            Debug.LogError("Form upload complete!");
+            Debug.Log(www.downloadHandler.text);
+        }
     }
 }
